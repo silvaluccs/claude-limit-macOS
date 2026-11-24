@@ -27,6 +27,7 @@ final class ClawdView: NSButton {
     private var unit: CGFloat = 2
     private var working = false
     private var lastMove: Move?
+    private var bag: [Move] = []
     private var nextMove: DispatchWorkItem?
 
     init() {
@@ -144,11 +145,22 @@ final class ClawdView: NSButton {
         let pool: [Move] = working
             ? [.dance, .jump, .celebrate, .walk, .sunglasses, .wave, .squash]
             : Move.allCases
-        let move = pool.filter { $0 != lastMove }.randomElement() ?? .blink
+        let move = drawFromBag(pool: pool)
         lastMove = move
         let duration = perform(move) / tempo
         let pause = working ? Double.random(in: 0.3...0.9) : Double.random(in: 1.2...3)
         scheduleNextMove(after: duration + pause)
+    }
+
+    private func drawFromBag(pool: [Move]) -> Move {
+        bag.removeAll { !pool.contains($0) }
+        if bag.isEmpty {
+            bag = pool.shuffled()
+            if bag.count > 1, bag.last == lastMove {
+                bag.swapAt(0, bag.count - 1)
+            }
+        }
+        return bag.removeLast()
     }
 
     @discardableResult
