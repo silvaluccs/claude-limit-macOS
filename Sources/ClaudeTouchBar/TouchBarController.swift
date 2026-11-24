@@ -4,7 +4,6 @@ extension NSTouchBarItem.Identifier {
     static let claudeTray = NSTouchBarItem.Identifier("dev.silvaluccs.claudetouchbar.tray")
     static let claudeIcon = NSTouchBarItem.Identifier("dev.silvaluccs.claudetouchbar.icon")
     static let usagePager = NSTouchBarItem.Identifier("dev.silvaluccs.claudetouchbar.usage")
-    static let refresh = NSTouchBarItem.Identifier("dev.silvaluccs.claudetouchbar.refresh")
     static let status = NSTouchBarItem.Identifier("dev.silvaluccs.claudetouchbar.status")
 }
 
@@ -12,7 +11,7 @@ extension NSTouchBarItem.Identifier {
 final class TouchBarController: NSObject, NSTouchBarDelegate {
     var onRefreshRequested: (() -> Void)?
 
-    private let trayIcon = ClawdView(showsPercent: true)
+    private let trayIcon = ClawdView(showsPercent: false)
     private lazy var trayItem: NSCustomTouchBarItem = {
         let item = NSCustomTouchBarItem(identifier: .claudeTray)
         item.view = trayIcon
@@ -27,7 +26,7 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
     private lazy var panel: NSTouchBar = {
         let bar = NSTouchBar()
         bar.delegate = self
-        bar.defaultItemIdentifiers = [.claudeIcon, .usagePager, .flexibleSpace, .status, .refresh]
+        bar.defaultItemIdentifiers = [.claudeIcon, .usagePager, .flexibleSpace, .status]
         return bar
     }()
 
@@ -117,17 +116,8 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
         case .claudeIcon: item.view = panelIcon
         case .usagePager: item.view = pager
         case .status: item.view = statusLabel
-        case .refresh:
-            let button = NSButton(image: NSImage(systemSymbolName: "arrow.clockwise", accessibilityDescription: "Atualizar")!,
-                                  target: self, action: #selector(refreshTapped))
-            item.view = button
         default: return nil
         }
         return item
-    }
-
-    @objc private func refreshTapped() {
-        panelIcon.playTapAnimation()
-        onRefreshRequested?()
     }
 }

@@ -88,6 +88,10 @@ final class ClawdView: NSButton {
         rebuildGeometry()
     }
 
+    // O NSButton usa coordenadas invertidas (y para baixo), o que deixava o
+    // sprite de cabeça para baixo. O sprite é montado com y para cima.
+    override var isFlipped: Bool { false }
+
     // Só os layers desenham; o NSButton não deve pintar fundo ao ser tocado.
     override func draw(_ dirtyRect: NSRect) {}
 

@@ -1,7 +1,7 @@
 # Claude Touch Bar
 
 Coloca o **Clawd**, o mascote do Claude Code, digitando num notebook na **Touch Bar**
-do MacBook Pro, com o percentual da sessão ao lado. Toque nele para abrir o
+do MacBook Pro. Toque nele para abrir o
 painel com o **uso da sessão (5h)** e o **uso semanal** do seu plano, com o
 horário de reset de cada um.
 
