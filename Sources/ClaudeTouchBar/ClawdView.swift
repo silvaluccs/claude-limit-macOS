@@ -5,7 +5,7 @@ final class ClawdView: NSButton {
     var onTap: (() -> Void)?
 
     private enum Move: CaseIterable {
-        case blink, lookAround, jump, wave, dance, walk, squash, sunglasses, sleep, celebrate, shiver
+        case blink, lookAround, jump, wave, dance, walk, squash, sunglasses, sleep, celebrate, shiver, coffee
     }
 
     private let character = CALayer()
@@ -18,6 +18,11 @@ final class ClawdView: NSButton {
     private let glasses = CAShapeLayer()
     private let glints = CAShapeLayer()
     private let zzz = CATextLayer()
+    private let mug = CALayer()
+    private let mugCup = CAShapeLayer()
+    private let mugCoffee = CAShapeLayer()
+    private let steam = (0..<2).map { _ in CALayer() }
+    private let tempo: CFTimeInterval = 1.4
 
     private var unit: CGFloat = 2
     private var working = false
@@ -43,6 +48,12 @@ final class ClawdView: NSButton {
         glasses.addSublayer(glints)
         glasses.opacity = 0
 
+        mugCup.fillColor = NSColor.white.cgColor
+        mugCoffee.fillColor = NSColor(srgbRed: 0.45, green: 0.27, blue: 0.16, alpha: 1).cgColor
+        for l in steam { l.backgroundColor = NSColor(white: 1, alpha: 0.7).cgColor; l.opacity = 0 }
+        for l in [mugCup, mugCoffee] + steam { mug.addSublayer(l) }
+        mug.opacity = 0
+
         zzz.string = "z"
         zzz.font = NSFont.systemFont(ofSize: 9, weight: .heavy)
         zzz.fontSize = 9
@@ -51,7 +62,7 @@ final class ClawdView: NSButton {
         zzz.opacity = 0
 
         character.addSublayer(body)
-        for l in [leftEye, rightEye, leftArm, rightArm, glasses] + legs { character.addSublayer(l) }
+        for l in [leftEye, rightEye, leftArm, rightArm, glasses, mug] + legs { character.addSublayer(l) }
         layer?.addSublayer(character)
         layer?.addSublayer(zzz)
 
@@ -101,6 +112,10 @@ final class ClawdView: NSButton {
         glasses.path = ClawdSprite.path(ClawdSprite.glasses, unit: unit)
         glints.frame = character.bounds
         glints.path = ClawdSprite.path(ClawdSprite.glassesGlints, unit: unit)
+        mug.frame = character.bounds
+        mugCup.path = ClawdSprite.path([ClawdSprite.mugCup], unit: unit)
+        mugCoffee.path = ClawdSprite.path([ClawdSprite.mugCoffee], unit: unit)
+        for (l, cell) in zip(steam, ClawdSprite.steam) { l.frame = ClawdSprite.rect(cell, unit: unit) }
         zzz.frame = CGRect(x: character.frame.maxX - 6, y: character.frame.maxY - 4, width: 8, height: 11)
         startBlinking()
     }
@@ -131,8 +146,8 @@ final class ClawdView: NSButton {
             : Move.allCases
         let move = pool.filter { $0 != lastMove }.randomElement() ?? .blink
         lastMove = move
-        let duration = perform(move)
-        let pause = working ? Double.random(in: 0.6...1.5) : Double.random(in: 2...5)
+        let duration = perform(move) / tempo
+        let pause = working ? Double.random(in: 0.3...0.9) : Double.random(in: 1.2...3)
         scheduleNextMove(after: duration + pause)
     }
 
@@ -215,9 +230,9 @@ final class ClawdView: NSButton {
                 keyframes("position.y", [0, u * 3], duration: 1.6, additive: true),
                 keyframes("opacity", [0, 1, 0], duration: 1.6),
             ]
-            floatUp.duration = 1.6
+            floatUp.duration = 1.6 / tempo
             floatUp.repeatCount = 3
-            floatUp.beginTime = CACurrentMediaTime() + 0.4
+            floatUp.beginTime = CACurrentMediaTime() + 0.4 / tempo
             zzz.add(floatUp, forKey: "move")
             return total
 
@@ -228,6 +243,34 @@ final class ClawdView: NSButton {
             }
             character.add(keyframes("position.y", [0, u * 3, 0, u * 3, 0], duration: 1.4, additive: true), forKey: "jump")
             return 1.4
+
+        case .coffee:
+            let total: CFTimeInterval = 3.4
+            let times: [NSNumber] = [0, 0.12, 0.25, 0.42, 0.52, 0.65, 0.82, 0.9, 1]
+            mug.add(keyframes("opacity", [0, 1, 1, 1, 1, 1, 1, 1, 0], times: times, duration: total), forKey: "fade")
+            mug.add(keyframes("position.x", [0, 0, -u * 2, -u * 2, 0, -u * 2, -u * 2, 0, 0], times: times,
+                              duration: total, additive: true), forKey: "moveX")
+            mug.add(keyframes("position.y", [0, 0, u * 2, u * 2, 0, u * 2, u * 2, 0, 0], times: times,
+                              duration: total, additive: true), forKey: "moveY")
+            rightArm.add(keyframes("position.y", [0, 0, u * 2, u * 2, 0, u * 2, u * 2, 0, 0], times: times,
+                                   duration: total, additive: true), forKey: "move")
+            for eye in [leftEye, rightEye] {
+                eye.add(keyframes("transform.scale.y", [1, 1, 0.3, 0.3, 1, 0.3, 0.3, 1, 1], times: times,
+                                  duration: total), forKey: "move")
+            }
+            for (i, puff) in steam.enumerated() {
+                let rise = CAAnimationGroup()
+                rise.animations = [
+                    keyframes("position.y", [0, u * 2], duration: 0.9, additive: true),
+                    keyframes("position.x", [0, u * 0.5, -u * 0.5, 0], duration: 0.9, additive: true),
+                    keyframes("opacity", [0, 1, 0], duration: 0.9),
+                ]
+                rise.duration = 0.9 / tempo
+                rise.repeatCount = 3
+                rise.beginTime = CACurrentMediaTime() + (0.15 + Double(i) * 0.45) / tempo
+                puff.add(rise, forKey: "move")
+            }
+            return total
 
         case .shiver:
             let shake = (0...12).map { $0 == 12 ? 0 : ($0 % 2 == 0 ? u * 0.5 : -u * 0.5) }
@@ -250,7 +293,7 @@ final class ClawdView: NSButton {
         let a = CAKeyframeAnimation(keyPath: keyPath)
         a.values = values
         a.keyTimes = times
-        a.duration = duration
+        a.duration = duration / tempo
         a.isAdditive = additive
         if discrete { a.calculationMode = .discrete }
         return a

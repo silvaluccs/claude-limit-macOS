@@ -5,7 +5,7 @@ Toque nele para abrir o painel com o **uso da sessão (5h)** e o **uso semanal**
 do seu plano, com o horário de reset de cada um.
 
 - O Clawd faz animações sorteadas: pisca, olha em volta, pula, acena, dança,
-  anda, coloca óculos escuros, dorme, comemora e treme. Quando o uso da sessão
+  anda, coloca óculos escuros, toma café, dorme, comemora e treme. Quando o uso da sessão
   está subindo, ele escolhe as animações mais agitadas e descansa menos entre elas.
 - No painel, um toque ou deslize na barra troca entre **Sessão** e **Semana**, com uma animação de subida.
   A Touch Bar só detecta movimento horizontal, então não há gesto vertical.

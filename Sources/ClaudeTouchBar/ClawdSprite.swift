@@ -13,6 +13,9 @@ enum ClawdSprite {
     static let legs: [Cell] = [(3, 8, 1, 2), (5, 8, 1, 2), (10, 8, 1, 2), (12, 8, 1, 2)]
     static let glasses: [Cell] = [(3, 2, 4, 2), (9, 2, 4, 2), (7, 2, 2, 1)]
     static let glassesGlints: [Cell] = [(4, 2, 1, 1), (10, 2, 1, 1)]
+    static let mugCup: Cell = (16, 4, 2, 2)
+    static let mugCoffee: Cell = (16, 3, 2, 1)
+    static let steam: [Cell] = [(16, 2, 1, 1), (17, 1, 1, 1)]
 
     static var bodyCells: [Cell] {
         var cells: [Cell] = []
