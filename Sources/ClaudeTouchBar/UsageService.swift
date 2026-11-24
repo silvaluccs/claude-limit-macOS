@@ -1,8 +1,6 @@
 import Foundation
 
-/// Um limite de uso (sessão de 5h ou semanal).
 struct UsageWindow: Equatable {
-    /// 0...100
     let percent: Double
     let resetsAt: Date?
 }
@@ -12,7 +10,6 @@ struct UsageSnapshot: Equatable {
     let weekly: UsageWindow?
     let fetchedAt: Date
 
-    /// Maior utilização entre sessão e semana, usada para a cor do ícone.
     var peakPercent: Double {
         max(session?.percent ?? 0, weekly?.percent ?? 0)
     }
@@ -34,9 +31,6 @@ enum UsageError: LocalizedError {
     }
 }
 
-/// Lê o token OAuth que o Claude Code guarda no Keychain e consulta o endpoint
-/// de uso (o mesmo que alimenta o `/usage`). O endpoint não é documentado
-/// oficialmente e pode mudar.
 final class UsageService {
     private let endpoint = URL(string: "https://api.anthropic.com/api/oauth/usage")!
     private let keychainService = "Claude Code-credentials"
@@ -74,8 +68,6 @@ final class UsageService {
         return snapshot
     }
 
-    /// A API devolve frações de segundo com 6 dígitos, que o ISO8601DateFormatter
-    /// nem sempre aceita; removemos a fração antes de converter.
     static func parseDate(_ string: String?) -> Date? {
         guard var s = string else { return nil }
         if let dot = s.firstIndex(of: ".") {
@@ -91,8 +83,6 @@ final class UsageService {
         return f.date(from: s)
     }
 
-    /// Usa o `/usr/bin/security`, o mesmo caminho que o próprio Claude Code usa,
-    /// para evitar um prompt de permissão do Keychain para este app.
     private func readAccessToken() -> String? {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/security")

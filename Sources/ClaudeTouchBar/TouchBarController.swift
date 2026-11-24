@@ -7,18 +7,17 @@ extension NSTouchBarItem.Identifier {
     static let status = NSTouchBarItem.Identifier("dev.silvaluccs.claudetouchbar.status")
 }
 
-/// Controla o ícone fixo na Control Strip e o painel expandido com o uso.
 final class TouchBarController: NSObject, NSTouchBarDelegate {
     var onRefreshRequested: (() -> Void)?
 
-    private let trayIcon = ClawdView(showsPercent: false)
+    private let trayIcon = ClawdView()
     private lazy var trayItem: NSCustomTouchBarItem = {
         let item = NSCustomTouchBarItem(identifier: .claudeTray)
         item.view = trayIcon
         return item
     }()
 
-    private let panelIcon = ClawdView(showsPercent: false)
+    private let panelIcon = ClawdView()
     private let sessionGauge = UsageGaugeView(title: "Sessão")
     private let weeklyGauge = UsageGaugeView(title: "Semana")
     private lazy var pager = UsagePagerView(pages: [sessionGauge, weeklyGauge])
@@ -39,8 +38,6 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
         statusLabel.font = .systemFont(ofSize: 11)
         statusLabel.textColor = Theme.secondaryText
 
-        // Sem o "X" do sistema: ele fechava o painel e tirava o ícone da Touch Bar.
-        // Para fechar, basta tocar no Clawd do painel.
         PrivateTouchBar.showsCloseBoxWhenFrontmost(false)
         PrivateTouchBar.addSystemTrayItem(trayItem)
         PrivateTouchBar.setControlStripPresence(.claudeTray, true)
@@ -51,8 +48,6 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
         PrivateTouchBar.setControlStripPresence(.claudeTray, false)
         PrivateTouchBar.removeSystemTrayItem(trayItem)
     }
-
-    // MARK: - Painel
 
     func togglePanel() {
         isPanelOpen ? closePanel() : openPanel()
@@ -72,18 +67,13 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
         guard isPanelOpen else { return }
         PrivateTouchBar.dismissSystemModal(panel)
         isPanelOpen = false
-        // Garante que o ícone continue fixo na Control Strip depois de fechar.
         PrivateTouchBar.setControlStripPresence(.claudeTray, true)
     }
-
-    // MARK: - Dados
 
     func update(snapshot: UsageSnapshot, isWorking: Bool) {
         self.snapshot = snapshot
         for icon in [trayIcon, panelIcon] {
-            icon.update(sessionPercent: snapshot.session?.percent,
-                        peakPercent: snapshot.peakPercent,
-                        isWorking: isWorking)
+            icon.update(isWorking: isWorking)
         }
         render()
     }
@@ -107,8 +97,6 @@ final class TouchBarController: NSObject, NSTouchBarDelegate {
         statusLabel.stringValue = "atualizado \(time)"
         statusLabel.textColor = Theme.secondaryText
     }
-
-    // MARK: - NSTouchBarDelegate
 
     func touchBar(_ touchBar: NSTouchBar, makeItemForIdentifier identifier: NSTouchBarItem.Identifier) -> NSTouchBarItem? {
         let item = NSCustomTouchBarItem(identifier: identifier)

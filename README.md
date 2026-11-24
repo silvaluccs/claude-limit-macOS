@@ -1,14 +1,15 @@
 # Claude Touch Bar
 
-Coloca o **Clawd**, o mascote do Claude Code, digitando num notebook na **Touch Bar**
-do MacBook Pro. Toque nele para abrir o
-painel com o **uso da sessão (5h)** e o **uso semanal** do seu plano, com o
-horário de reset de cada um.
+Coloca o **Clawd**, o mascote do Claude Code, na **Touch Bar** do MacBook Pro.
+Toque nele para abrir o painel com o **uso da sessão (5h)** e o **uso semanal**
+do seu plano, com o horário de reset de cada um.
 
-- O Clawd digita devagar quando está ocioso. Quando o uso da sessão sobe, ele digita rápido e balança.
+- O Clawd faz animações sorteadas: pisca, olha em volta, pula, acena, dança,
+  anda, coloca óculos escuros, dorme, comemora e treme. Quando o uso da sessão
+  está subindo, ele escolhe as animações mais agitadas e descansa menos entre elas.
 - No painel, um toque ou deslize na barra troca entre **Sessão** e **Semana**, com uma animação de subida.
   A Touch Bar só detecta movimento horizontal, então não há gesto vertical.
-- O logo da tampa do notebook e o percentual mudam de cor a partir de 70% (amarelo) e de 90% (vermelho).
+- As barras mudam de cor a partir de 70% (amarelo) e de 90% (vermelho).
 - Para fechar o painel, toque no Clawd de novo.
 - Também mostra `sessão% · semana%` na barra de menus, com o menu para atualizar ou sair.
 

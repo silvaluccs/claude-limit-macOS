@@ -1,7 +1,6 @@
 import AppKit
 
 enum Theme {
-    /// Laranja "terracota" do Claude.
     static let claude = NSColor(srgbRed: 0.851, green: 0.467, blue: 0.341, alpha: 1)
     static let warning = NSColor(srgbRed: 0.96, green: 0.76, blue: 0.26, alpha: 1)
     static let danger = NSColor(srgbRed: 0.93, green: 0.33, blue: 0.31, alpha: 1)
@@ -31,7 +30,6 @@ enum Format {
         return "\(Int(p.rounded()))%"
     }
 
-    /// "reseta em 2h10" para a sessão.
     static func relativeReset(_ date: Date?, now: Date = Date()) -> String {
         guard let date else { return "" }
         let minutes = max(0, Int(date.timeIntervalSince(now) / 60))
@@ -39,7 +37,6 @@ enum Format {
         return "reseta em \(minutes / 60)h\(String(format: "%02d", minutes % 60))"
     }
 
-    /// "reseta dom 18:59" para a semana.
     static func weekdayReset(_ date: Date?) -> String {
         guard let date else { return "" }
         return "reseta " + weekday.string(from: date).replacingOccurrences(of: ".", with: "")

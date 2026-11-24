@@ -1,10 +1,6 @@
 import AppKit
 import QuartzCore
 
-/// Mostra uma barra de uso por vez (Sessão ou Semana). Um toque ou um deslize
-/// troca de página com uma animação de "subida": a atual sai por cima e a
-/// próxima entra por baixo. A Touch Bar só detecta movimento horizontal, então
-/// o gesto é toque/deslize lateral e a subida fica por conta da animação.
 final class UsagePagerView: NSView {
     let pages: [UsageGaugeView]
     private(set) var index = 0
@@ -59,7 +55,6 @@ final class UsagePagerView: NSView {
             page.frame = pageFrame(offset: 0)
             page.isHidden = i != index
         }
-        // Pontinhos empilhados na vertical, reforçando a ideia de "subir".
         let size: CGFloat = 4, gap: CGFloat = 4
         let total = CGFloat(dots.count) * size + CGFloat(dots.count - 1) * gap
         CATransaction.begin()
@@ -77,8 +72,6 @@ final class UsagePagerView: NSView {
             dot.backgroundColor = (i == index ? Theme.text : Theme.track).cgColor
         }
     }
-
-    // MARK: - Navegação
 
     func show(index newIndex: Int, animated: Bool) {
         guard pages.indices.contains(newIndex) else { return }
@@ -119,8 +112,6 @@ final class UsagePagerView: NSView {
     func showNext() {
         show(index: (index + 1) % pages.count, animated: true)
     }
-
-    // MARK: - Toque
 
     override func touchesEnded(with event: NSEvent) {
         showNext()

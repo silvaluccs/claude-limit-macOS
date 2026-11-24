@@ -1,8 +1,5 @@
 import AppKit
 
-/// Ponte para as APIs privadas da Touch Bar (as mesmas usadas por Pock/MTMR).
-/// Permitem colocar um item fixo na Control Strip (lado direito) e abrir uma
-/// Touch Bar "modal de sistema", que aparece em qualquer app em primeiro plano.
 enum PrivateTouchBar {
     private static let dfr: UnsafeMutableRawPointer? =
         dlopen("/System/Library/PrivateFrameworks/DFRFoundation.framework/DFRFoundation", RTLD_NOW)

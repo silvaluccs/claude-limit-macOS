@@ -11,9 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var lastFetchAt: Date?
     private var isFetching = false
 
-    /// Intervalo entre consultas. O endpoint tem rate limit; 2 min é suficiente.
     private let pollInterval: TimeInterval = 120
-    /// Por quanto tempo o ícone fica no modo "trabalhando" depois que o uso sobe.
     private let workingWindow: TimeInterval = 4 * 60
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -36,10 +34,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         touchBar.uninstall()
     }
 
-    // MARK: - Atualização
-
-    /// `force == false` ignora pedidos feitos menos de 30s depois da última leitura
-    /// (por exemplo, abrir o painel várias vezes seguidas).
     func refresh(force: Bool) {
         if isFetching { return }
         if !force, let last = lastFetchAt, Date().timeIntervalSince(last) < 30 { return }
@@ -68,12 +62,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         updateMenu(error: nil)
     }
 
-    // MARK: - Barra de menus
-
     private func setupStatusItem() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            // Clawd de pé: grade 16×10, 1 pt por pixel.
             let image = NSImage(size: NSSize(width: 16, height: 10), flipped: false) { _ in
                 guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
                 ctx.setFillColor(NSColor.black.cgColor)

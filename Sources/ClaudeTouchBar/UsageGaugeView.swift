@@ -1,7 +1,6 @@
 import AppKit
 import QuartzCore
 
-/// Uma barra de uso para a Touch Bar:  Sessão  [██████░░░░]  16%  reseta em 2h10
 final class UsageGaugeView: NSView {
     private let title: String
     private var percent: Double?
@@ -97,7 +96,6 @@ final class UsageGaugeView: NSView {
         CATransaction.commit()
     }
 
-    /// Faz a barra "encher" a partir do zero, ao abrir o painel.
     func animateIn() {
         CATransaction.begin()
         CATransaction.setDisableActions(true)

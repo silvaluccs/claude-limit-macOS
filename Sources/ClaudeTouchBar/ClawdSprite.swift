@@ -1,33 +1,19 @@
 import CoreGraphics
 
-/// Pixel art do Clawd (mascote do Claude Code), derivada do logo em blocos que
-/// aparece no terminal:
-///
-///      ▐▛███▜▌
-///     ▝▜█████▛▘
-///       ▘▘ ▝▝
-///
-/// Cada caractere de quadrante vira 2×2 "pixels" de terminal, e como a célula
-/// do terminal é 1:2, cada linha de quadrante vira 2 linhas de pixels quadrados.
-/// Grade final: 16 colunas × 10 linhas (de cima para baixo), mais o notebook.
 enum ClawdSprite {
     typealias Cell = (col: Int, row: Int, w: Int, h: Int)
 
     static let cols = 16
-    static let rows = 12
+    static let rows = 10
 
     static let leftEye: Cell = (4, 2, 1, 2)
     static let rightEye: Cell = (11, 2, 1, 2)
     static let leftArm: Cell = (0, 4, 2, 2)
     static let rightArm: Cell = (14, 4, 2, 2)
     static let legs: [Cell] = [(3, 8, 1, 2), (5, 8, 1, 2), (10, 8, 1, 2), (12, 8, 1, 2)]
+    static let glasses: [Cell] = [(3, 2, 4, 2), (9, 2, 4, 2), (7, 2, 2, 1)]
+    static let glassesGlints: [Cell] = [(4, 2, 1, 1), (10, 2, 1, 1)]
 
-    /// Tampa do notebook (vista por trás) e a base/teclado.
-    static let lid: Cell = (4, 7, 8, 4)
-    static let base: Cell = (2, 11, 12, 1)
-    static let lidLogo: Cell = (7, 8, 2, 1)
-
-    /// Corpo 12×8 com os olhos "vazados".
     static var bodyCells: [Cell] {
         var cells: [Cell] = []
         for row in 0..<8 {
@@ -39,22 +25,20 @@ enum ClawdSprite {
         return cells
     }
 
-    /// Converte uma célula (linha de cima para baixo) num retângulo com y para cima.
-    static func rect(_ c: Cell, unit u: CGFloat, gridRows: Int = rows) -> CGRect {
+    static func rect(_ c: Cell, unit u: CGFloat) -> CGRect {
         CGRect(x: CGFloat(c.col) * u,
-               y: CGFloat(gridRows - c.row - c.h) * u,
+               y: CGFloat(rows - c.row - c.h) * u,
                width: CGFloat(c.w) * u,
                height: CGFloat(c.h) * u)
     }
 
-    static func path(_ cells: [Cell], unit u: CGFloat, gridRows: Int = rows) -> CGPath {
+    static func path(_ cells: [Cell], unit u: CGFloat) -> CGPath {
         let p = CGMutablePath()
-        for c in cells { p.addRect(rect(c, unit: u, gridRows: gridRows)) }
+        for c in cells { p.addRect(rect(c, unit: u)) }
         return p
     }
 
-    /// Clawd "de pé", sem notebook (ícone da barra de menus). Grade 16×10.
     static func standingPath(unit u: CGFloat) -> CGPath {
-        path(bodyCells + [leftArm, rightArm] + legs, unit: u, gridRows: 10)
+        path(bodyCells + [leftArm, rightArm] + legs, unit: u)
     }
 }
