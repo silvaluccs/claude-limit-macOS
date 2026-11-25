@@ -23,6 +23,7 @@ final class ClawdView: NSButton {
     private let mugCoffee = CAShapeLayer()
     private let steam = (0..<2).map { _ in CALayer() }
     private let tempo: CFTimeInterval = 1.4
+    private static let frameRate = CAFrameRateRange(minimum: 10, maximum: 20, preferred: 20)
 
     private var unit: CGFloat = 2
     private var working = false
@@ -118,7 +119,6 @@ final class ClawdView: NSButton {
         mugCoffee.path = ClawdSprite.path([ClawdSprite.mugCoffee], unit: unit)
         for (l, cell) in zip(steam, ClawdSprite.steam) { l.frame = ClawdSprite.rect(cell, unit: unit) }
         zzz.frame = CGRect(x: character.frame.maxX - 6, y: character.frame.maxY - 4, width: 8, height: 11)
-        startBlinking()
     }
 
     func update(isWorking: Bool) {
@@ -139,6 +139,11 @@ final class ClawdView: NSButton {
         let item = DispatchWorkItem { [weak self] in self?.performRandomMove() }
         nextMove = item
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+        if delay > 1.5 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay * Double.random(in: 0.4...0.7)) { [weak self] in
+                self?.blinkOnce()
+            }
+        }
     }
 
     private func performRandomMove() {
@@ -243,6 +248,7 @@ final class ClawdView: NSButton {
                 keyframes("opacity", [0, 1, 0], duration: 1.6),
             ]
             floatUp.duration = 1.6 / tempo
+            floatUp.preferredFrameRateRange = Self.frameRate
             floatUp.repeatCount = 3
             floatUp.beginTime = CACurrentMediaTime() + 0.4 / tempo
             zzz.add(floatUp, forKey: "move")
@@ -278,6 +284,7 @@ final class ClawdView: NSButton {
                     keyframes("opacity", [0, 1, 0], duration: 0.9),
                 ]
                 rise.duration = 0.9 / tempo
+                rise.preferredFrameRateRange = Self.frameRate
                 rise.repeatCount = 3
                 rise.beginTime = CACurrentMediaTime() + (0.15 + Double(i) * 0.45) / tempo
                 puff.add(rise, forKey: "move")
@@ -291,11 +298,9 @@ final class ClawdView: NSButton {
         }
     }
 
-    private func startBlinking() {
+    private func blinkOnce() {
         for eye in [leftEye, rightEye] {
-            let blink = keyframes("transform.scale.y", [1, 1, 0.15, 1], times: [0, 0.93, 0.96, 1], duration: 4.2)
-            blink.repeatCount = .infinity
-            eye.add(blink, forKey: "blink")
+            eye.add(keyframes("transform.scale.y", [1, 0.15, 1], duration: 0.2, discrete: true), forKey: "blink")
         }
     }
 
@@ -306,6 +311,7 @@ final class ClawdView: NSButton {
         a.values = values
         a.keyTimes = times
         a.duration = duration / tempo
+        a.preferredFrameRateRange = Self.frameRate
         a.isAdditive = additive
         if discrete { a.calculationMode = .discrete }
         return a
