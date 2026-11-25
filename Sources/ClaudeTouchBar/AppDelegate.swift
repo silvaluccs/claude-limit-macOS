@@ -5,14 +5,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let touchBar = TouchBarController()
     private var statusItem: NSStatusItem!
     private var timer: Timer?
+    private var backoffLevel = 0
 
     private var snapshot: UsageSnapshot?
     private var lastIncreaseAt: Date?
     private var lastFetchAt: Date?
     private var isFetching = false
 
-    private let pollInterval: TimeInterval = 120
-    private let workingWindow: TimeInterval = 4 * 60
+    private let pollInterval: TimeInterval = 5 * 60
+    private let minManualInterval: TimeInterval = 2 * 60
+    private let maxBackoff: TimeInterval = 30 * 60
+    private let workingWindow: TimeInterval = 6 * 60
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         setupStatusItem()
@@ -20,9 +23,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         touchBar.onRefreshRequested = { [weak self] in self?.refresh(force: false) }
         touchBar.install()
 
-        timer = Timer.scheduledTimer(withTimeInterval: pollInterval, repeats: true) { [weak self] _ in
-            self?.refresh(force: true)
-        }
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didWakeNotification, object: nil, queue: .main
         ) { [weak self] _ in self?.refresh(force: true) }
@@ -36,19 +36,43 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func refresh(force: Bool) {
         if isFetching { return }
-        if !force, let last = lastFetchAt, Date().timeIntervalSince(last) < 30 { return }
+        if backoffLevel > 0, let timer, timer.fireDate > Date() { return }
+        if !force, let last = lastFetchAt, Date().timeIntervalSince(last) < minManualInterval { return }
         isFetching = true
         Task { @MainActor in
             defer { isFetching = false; lastFetchAt = Date() }
             do {
                 let new = try await service.fetch()
+                backoffLevel = 0
                 apply(new)
+                scheduleNextFetch(after: pollInterval)
+            } catch UsageError.rateLimited(let retryAfter) {
+                backoffLevel += 1
+                let exponential = min(pollInterval * pow(2, Double(backoffLevel - 1)), maxBackoff)
+                let wait = max(retryAfter ?? 0, exponential)
+                scheduleNextFetch(after: wait)
+                let time = DateFormatter.localizedString(from: Date().addingTimeInterval(wait),
+                                                         dateStyle: .none, timeStyle: .short)
+                report(message: "Muitas consultas, tentando de novo às \(time)")
             } catch {
-                touchBar.show(error: error)
-                statusItem.button?.toolTip = error.localizedDescription
-                updateMenu(error: error)
+                scheduleNextFetch(after: pollInterval)
+                report(message: error.localizedDescription)
             }
         }
+    }
+
+    private func scheduleNextFetch(after interval: TimeInterval) {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { [weak self] _ in
+            self?.refresh(force: true)
+        }
+    }
+
+    private func report(message: String) {
+        let error = NSError(domain: "ClaudeTouchBar", code: 0, userInfo: [NSLocalizedDescriptionKey: message])
+        touchBar.show(error: error)
+        statusItem.button?.toolTip = message
+        updateMenu(error: error)
     }
 
     private func apply(_ new: UsageSnapshot) {

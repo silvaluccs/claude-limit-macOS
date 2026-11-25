@@ -19,6 +19,7 @@ enum UsageError: LocalizedError {
     case noCredentials
     case unauthorized
     case http(Int)
+    case rateLimited(retryAfter: TimeInterval?)
     case decoding
 
     var errorDescription: String? {
@@ -26,6 +27,7 @@ enum UsageError: LocalizedError {
         case .noCredentials: return "Credenciais do Claude Code não encontradas no Keychain"
         case .unauthorized: return "Token expirado — abra o Claude Code para renovar"
         case .http(let code): return "Erro HTTP \(code)"
+        case .rateLimited: return "Muitas consultas à API"
         case .decoding: return "Resposta inesperada da API"
         }
     }
@@ -47,6 +49,10 @@ final class UsageService {
         let (data, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse {
             if http.statusCode == 401 || http.statusCode == 403 { throw UsageError.unauthorized }
+            if http.statusCode == 429 {
+                let retryAfter = http.value(forHTTPHeaderField: "Retry-After").flatMap(TimeInterval.init)
+                throw UsageError.rateLimited(retryAfter: retryAfter)
+            }
             guard (200..<300).contains(http.statusCode) else { throw UsageError.http(http.statusCode) }
         }
         return try Self.parse(data)
